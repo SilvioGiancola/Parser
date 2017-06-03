@@ -13,8 +13,15 @@ public:
     Team(QString FullName);
 
     QString getFullName();
+    QString getShortName();
 
     bool operator==(const Team &rhs)const;
+
+    enum
+    {
+        Home,
+        Away
+    };
 
 private:
     QString FullName;

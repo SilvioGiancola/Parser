@@ -14,129 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QGridLayout" name="gridLayout_3">
-    <item row="10" column="1">
-     <widget class="QListWidget" name="listWidget_eventAway"/>
-    </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="label_4">
-      <property name="text">
-       <string>ID:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1">
-     <widget class="QLabel" name="label_ID">
-      <property name="text">
-       <string>ID:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="1">
-     <widget class="QLabel" name="label_Score">
-      <property name="text">
-       <string>Score</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QLabel" name="label_HomeTeam">
-      <property name="text">
-       <string>ID:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="10" column="0">
-     <widget class="QListWidget" name="listWidget_eventHome"/>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label_6">
-      <property name="text">
-       <string>Away:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="1">
-     <widget class="QLabel" name="label_Time">
-      <property name="text">
-       <string>Time:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="0" colspan="2">
-     <widget class="QPushButton" name="pushButton_GetGameDetails">
-      <property name="text">
-       <string>Get Game Event</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="0">
-     <widget class="QLabel" name="label_5">
-      <property name="text">
-       <string>Score:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label_7">
-      <property name="text">
-       <string>Home:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="label_3">
-      <property name="text">
-       <string>Time:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0" colspan="2">
-     <widget class="QPushButton" name="pushButton_GetGameID">
-      <property name="text">
-       <string>Get Game ID</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QLabel" name="label_AwayTeam">
-      <property name="text">
-       <string>ID:</string>
-      </property>
-      <property name="openExternalLinks">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="8" column="0">
-     <widget class="QLabel" name="label_8">
-      <property name="text">
-       <string>Home Team Event</string>
-      </property>
-     </widget>
-    </item>
-    <item row="8" column="1">
-     <widget class="QLabel" name="label_9">
-      <property name="text">
-       <string>Away Team Event</string>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="0" colspan="2">
-     <widget class="QPushButton" name="pushButton_FindYoutubeVideo">
-      <property name="text">
-       <string>FindYoutubeVideo</string>
-      </property>
-     </widget>
-    </item>
-    <item row="11" column="0" colspan="2">
-     <widget class="QPushButton" name="pushButton_ExportJSON">
-      <property name="text">
-       <string>Export Full .json</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
+   <layout class="QGridLayout" name="gridLayout_3"/>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -157,101 +35,10 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <widget class="QDockWidget" name="dockWidget">
-   <attribute name="dockWidgetArea">
-    <number>4</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents_2">
-    <layout class="QGridLayout" name="gridLayout_2">
-     <item row="0" column="0">
-      <widget class="QComboBox" name="comboBox_league">
-       <item>
-        <property name="text">
-         <string>italy/serie-a</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>germany/bundesliga</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>spain/laliga</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>england/epl</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>france/ligue-1</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <widget class="QComboBox" name="comboBox_season">
-       <item>
-        <property name="text">
-         <string>2014-2015</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>2015-2016</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QPushButton" name="pushButton_LoadTeams">
-       <property name="text">
-        <string>Load Teams</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="2">
-      <widget class="QPushButton" name="pushButton_LoadMore">
-       <property name="text">
-        <string>Load more Games</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="2">
-      <widget class="QLabel" name="label_linkResults">
-       <property name="text">
-        <string>results Link</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_linkTeams">
-       <property name="text">
-        <string>teams Link</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QPushButton" name="pushButton_launchJS">
-       <property name="text">
-        <string>LaunchJS</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="2">
-      <widget class="QPushButton" name="pushButton_LoadGames">
-       <property name="text">
-        <string>Load Games</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-  </widget>
   <widget class="QDockWidget" name="dockWidget_Teams">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="windowTitle">
     <string>Teams</string>
    </property>
@@ -260,8 +47,25 @@
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="1">
+     <item row="5" column="1">
+      <widget class="QPushButton" name="pushButton_BatchChampionship">
+       <property name="text">
+        <string>Batch Championship</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QPushButton" name="pushButton_OpenJSON">
+       <property name="text">
+        <string>Open JSON</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
       <widget class="QTabWidget" name="tabWidget">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
        <property name="currentIndex">
         <number>1</number>
        </property>
@@ -280,7 +84,7 @@
          <item row="0" column="1">
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>Visitor</string>
+            <string>Away</string>
            </property>
           </widget>
          </item>
@@ -288,11 +92,14 @@
           <widget class="QListWidget" name="listWidget_HomeTeams"/>
          </item>
          <item row="1" column="1">
-          <widget class="QListWidget" name="listWidget_VisitorsTeams"/>
+          <widget class="QListWidget" name="listWidget_AwayTeams"/>
          </item>
         </layout>
        </widget>
        <widget class="QWidget" name="tab_2">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <attribute name="title">
          <string>Cross</string>
         </attribute>
@@ -323,6 +130,249 @@
          </item>
         </layout>
        </widget>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QPushButton" name="pushButton_ExportJSON">
+       <property name="text">
+        <string>Export .json Championship</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QComboBox" name="comboBox_league">
+         <item>
+          <property name="text">
+           <string>italy/serie-a</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>germany/bundesliga</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>spain/laliga</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>england/epl</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>france/ligue-1</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="spinBox_year">
+         <property name="minimum">
+          <number>2000</number>
+         </property>
+         <property name="maximum">
+          <number>2020</number>
+         </property>
+         <property name="value">
+          <number>2016</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="6" column="1">
+      <widget class="QPushButton" name="pushButton_BatchAllChampionship">
+       <property name="text">
+        <string>Batch All Championship</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget_2">
+   <property name="maximumSize">
+    <size>
+     <width>600</width>
+     <height>524287</height>
+    </size>
+   </property>
+   <property name="windowTitle">
+    <string>FlashScore.ae Parser</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_3">
+    <layout class="QGridLayout" name="gridLayout_8">
+     <item row="3" column="1">
+      <widget class="QPushButton" name="pushButton_LoadMore">
+       <property name="text">
+        <string>Load more Games</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" colspan="2">
+      <widget class="QPushButton" name="pushButton_LoadTeams">
+       <property name="text">
+        <string>Load Teams</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0" colspan="2">
+      <widget class="QLabel" name="label_linkResults">
+       <property name="text">
+        <string>results Link</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QPushButton" name="pushButton_LoadGames">
+       <property name="text">
+        <string>Load Games</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0" colspan="2">
+      <widget class="QLabel" name="label_linkTeams">
+       <property name="text">
+        <string>teams Link</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0" colspan="2">
+      <widget class="QLabel" name="label_linkGame">
+       <property name="text">
+        <string>game link</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0" colspan="2">
+      <widget class="QPushButton" name="pushButton_GetGameDetails">
+       <property name="text">
+        <string>Parse Game Event From FlashScore</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget_3">
+   <property name="windowTitle">
+    <string>Game details</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_4">
+    <layout class="QGridLayout" name="gridLayout_9">
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Time:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Away:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QGroupBox" name="groupBox_2">
+       <property name="title">
+        <string>Away Team Events</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_7">
+        <item row="0" column="0">
+         <widget class="QListWidget" name="listWidget_eventAway"/>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Home Team Events</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_6">
+        <item row="0" column="0">
+         <widget class="QListWidget" name="listWidget_eventHome"/>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLabel" name="label_Score">
+       <property name="text">
+        <string>Score of the Game</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLabel" name="label_HomeTeam">
+       <property name="text">
+        <string>Home Team Full Name</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Score:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="label_ID">
+       <property name="text">
+        <string>Game ID from FlashScore.ae</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="label_AwayTeam">
+       <property name="text">
+        <string>Away Team Full Name</string>
+       </property>
+       <property name="openExternalLinks">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>ID:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="label_Time">
+       <property name="text">
+        <string>Date and time of the Game</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>Home:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0" colspan="2">
+      <widget class="QPushButton" name="pushButton_FindYoutubeVideo">
+       <property name="text">
+        <string>FindYoutubeVideo</string>
+       </property>
       </widget>
      </item>
     </layout>

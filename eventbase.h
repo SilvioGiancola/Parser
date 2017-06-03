@@ -2,36 +2,63 @@
 #define EVENTBASE_H
 
 #include <QTime>
+#include <team.h>
+
+
 
 class EventBase
 {
 public:
     EventBase();
+    EventBase(QTime t);
+    EventBase(QTime t, QString desc);
 
-
-    EventBase(QTime t) : _time(t){};
-
+    bool operator==(const EventBase &rhs)const;
 
     // Time handling
-    void setTime(QTime value) {_time = value; return;}
-    QTime getTime() { return _time;}
+    void setTime(QTime value);
+    void setTime(double value);
+    QTime getTime();
+
+    QTime getStartTime();
+    QTime getEndTime();
+    double getStartTimeInSeconds();
+    double getEndTimeInSeconds();
+
+    bool setStartTime(QTime value);
+    bool setEndTime(QTime value);
+    bool setStartTime(double value);
+    bool setEndTime(double value);
 
     // Description handling
-    void setDescription(QString value) {_description = value; return;}
-    QString getDescription() { return _description;}
+    void setDescription(QString value);
+    QString getDescription();
+
+    // Label handling
+    void setLabel(QString value);
+    QString getLabel();
 
 
     // Pretty PRint
-    QString prettyPrint()
-    {
-        if (_time.hour() == 0)
-            return QString(" - ");
-        else
-            return QString("%1 : %2").arg(_time.toString("h - mm:ss")).arg(_description);
-    }
+    QString prettyPrint();
+
+
+    bool isHomeTeam();
+    bool isAwayTeam();
+    void setHomeTeam();
+    void setAwayTeam();
+
+    bool isEmpty();
 protected:
-    QTime _time;
-    QString _description;
+    QTime StartTime;
+    QTime EndTime;
+    QString description;
+    QString label;
+
+    int team; //0-Home / 1-Away
+
+  //  float startTime;
+  //  float endTime;
 
 };
 

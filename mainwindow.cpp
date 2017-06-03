@@ -6,40 +6,30 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->centralWidget->hide();
+    mux = new QMutex();
 
 
-    ui->comboBox_season->clear();
-    //  for (int year = 2010; year < 2017; year++)
-    //      ui->comboBox_season->addItem(QString("%1-%2").arg(year).arg(year+1));
-    for (int year = 2010; year < 2017; year++)
-        ui->comboBox_season->addItem(QString("%1").arg(year));
-
-
-
-
-
-
-    /*results_championship = new QWebEnginePage();
-    teams = new QWebEnginePage();
-    results_game = new QWebEnginePage();
-*/
-    currentGame = new Game();
-
+    // setup my Championship
     myChampionship = new Championship();
 
-
     connect(myChampionship, SIGNAL(newTeamAdded()), this, SLOT(on_myChampionship_newTeamAdded()));
-    connect(myChampionship, SIGNAL(newGameAdded(Game*)), this, SLOT(on_myChampionship_newGameAdded(Game*)));
+    connect(myChampionship, SIGNAL(gameEdited(Game*)), this, SLOT(on_myChampionship_gameEdited(Game*)));
 
 
-    //  connect(teams, SIGNAL(loadFinished(bool)),  this, SLOT(on_teams_loadFinished(bool)));
-    // connect(teams, SIGNAL(loadStarted()),       this, SLOT(on_teams_loadStarted()));
+    myChampionship->setLeague(ui->comboBox_league->currentText());
+    myChampionship->setYear(ui->spinBox_year->value());
+    updateChampionshipLinks(myChampionship->getLeague(), myChampionship->getYear());
 
 
-    // connect(results_game, SIGNAL(loadFinished(bool)), this, SLOT(on_results_game_loadFinished(bool)));
+
+    //setup selected Game
+    currentGame = new Game();
 
 
-    //    on_pushButton_LoadChampionship_clicked();
+
+    currentGameWebEngine = new QWebEnginePage();
+
 }
 
 
@@ -51,18 +41,69 @@ MainWindow::~MainWindow()
 }
 
 
+
+
+void MainWindow::on_spinBox_year_valueChanged(int arg1)
+{
+    myChampionship->setYear(arg1);
+    updateChampionshipLinks(myChampionship->getLeague(), arg1);
+}
+
+void MainWindow::on_comboBox_league_currentTextChanged(const QString &arg1)
+{
+    myChampionship->setLeague(arg1);
+    updateChampionshipLinks(arg1, myChampionship->getYear());
+}
+
+void MainWindow::updateChampionshipLinks(QString league, int year)
+{
+    QString ChampionshipName = QString("%1-%2-%3")
+            .arg(league).arg(year).arg(year + 1);
+
+
+    QString teamsLink;
+    teamsLink = QString("http://www.flashscore.ae/football/%1/teams/")
+            .arg(ChampionshipName);
+
+    ui->label_linkTeams->setText(QString("<a href=\"%1\">%1</a>").arg(teamsLink));
+    ui->label_linkTeams->setTextFormat(Qt::RichText);
+    ui->label_linkTeams->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    ui->label_linkTeams->setOpenExternalLinks(true);
+
+
+    QString resultsLink;
+    resultsLink = QString("http://www.flashscore.ae/football/%1/results/")
+            .arg(ChampionshipName);
+
+    ui->label_linkResults->setText(QString("<a href=\"%1\">%1</a>").arg(resultsLink));
+    ui->label_linkResults->setTextFormat(Qt::RichText);
+    ui->label_linkResults->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    ui->label_linkResults->setOpenExternalLinks(true);
+
+    return;
+}
+
+
+
+
+
+
 void MainWindow::on_myChampionship_newTeamAdded()
 {
+    QMutexLocker muxlocker(mux);
+
     qDebug() << "on_myChampionship_newTeamAdded";
 
     QStringList listofTeam = myChampionship->getListOfTeamsName();
 
+    // handle list
     ui->listWidget_HomeTeams->clear();
-    ui->listWidget_VisitorsTeams->clear();
+    ui->listWidget_AwayTeams->clear();
     ui->listWidget_HomeTeams->addItems(listofTeam);
-    ui->listWidget_VisitorsTeams->addItems(listofTeam);
+    ui->listWidget_AwayTeams->addItems(listofTeam);
 
 
+    // handle table
     ui->tableWidget_Season->setColumnCount(listofTeam.count());
     ui->tableWidget_Season->setRowCount(listofTeam.count());
 
@@ -74,22 +115,24 @@ void MainWindow::on_myChampionship_newTeamAdded()
     ui->dockWidget_Teams->setEnabled(listofTeam.count() > 0);
 }
 
-void MainWindow::on_myChampionship_newGameAdded(Game * newGame)
+void MainWindow::on_myChampionship_gameEdited(Game * newGame)
 {
 
-    qDebug() << "newGameAdded : " << newGame->printScoreWithTeamNames();
+    QMutexLocker muxlocker(mux);
+
+    qDebug() << "on_myChampionship_gameEdited : " << newGame->printScoreWithTeamNames();
     int col = 0, row = 0;
 
     for ( int i = 0; i < ui->tableWidget_Season->columnCount(); i++)
-        if (newGame->awayTeam->getFullName() == ui->tableWidget_Season->horizontalHeaderItem(i)->text())
+        if (newGame->getAwayTeam()->getFullName() == ui->tableWidget_Season->horizontalHeaderItem(i)->text())
             col = i;
 
     for ( int j = 0; j < ui->tableWidget_Season->rowCount(); j++)
-        if (newGame->homeTeam->getFullName() == ui->tableWidget_Season->verticalHeaderItem(j)->text())
+        if (newGame->getHomeTeam()->getFullName() == ui->tableWidget_Season->verticalHeaderItem(j)->text())
             row = j;
 
     QTableWidgetItem *setdes = new QTableWidgetItem();
-    setdes->setText(newGame->printScoreWithTeamNames());
+    setdes->setText(newGame->printScore());
     // qDebug() << "putting in (row:" << row << ", col:" << col<<")";
     ui->tableWidget_Season->setItem(row,col,setdes);
 
@@ -97,325 +140,47 @@ void MainWindow::on_myChampionship_newGameAdded(Game * newGame)
 
 
 
+/******************
+ * Wrapper functions for flashscore.ae
+ **************************/
+
+
+/////////////////////////////////////////////////////////////
+/// \brief MainWindow::on_pushButton_LoadTeams_clicked
+/// Loads the team from the flashscore.ea teams link
 void MainWindow::on_pushButton_LoadTeams_clicked()
 {
-    myChampionship->loadTeams(ui->comboBox_league->currentText(), ui->comboBox_season->currentText().toInt());
+    myChampionship->loadTeams();
 }
 
+///////////////////////////////////////////////////////
+/// \brief MainWindow::on_pushButton_LoadGames_clicked
+/// Loads 100 games from the flashscore.ea results link
 void MainWindow::on_pushButton_LoadGames_clicked()
 {
-    myChampionship->loadGames(ui->comboBox_league->currentText(), ui->comboBox_season->currentText().toInt());
+    myChampionship->loadGames();
 }
 
+////////////////////////////////////////////////////////
+/// \brief MainWindow::on_pushButton_LoadMore_clicked
+/// Loads an extra 100 games from the flashscore.ea results link
 void MainWindow::on_pushButton_LoadMore_clicked()
 {
     myChampionship->loadMoreGames();
 }
-/*
-void MainWindow::on_results_championship_loadFinished(bool)
-{
-    //  isLoaded = true;
-    qDebug() << "on_results_championship_loadFinished";
 
-    //parseGames
-
-}
-*/
-/*
-void MainWindow::on_teams_loadStarted()
-{
-    qDebug() << "on_teams_loadStarted";
-    ui->dockWidget_Teams->setEnabled(false);
-}*/
-/*
-void MainWindow::on_teams_loadFinished(bool ok)
-{
-    qDebug() << "on_teams_loadFinished" << ok;
-    if (ok) on_pushButton_GetTeams_clicked();
-}*/
-
-/*
-void MainWindow::on_results_game_loadFinished(bool ok )
-{
-    //isLoaded = true;
-    qDebug() << "on_results_game_loadFinished" << ok;
-    on_pushButton_GetGameDetails_clicked();
-}*/
-
-
-/*
-void MainWindow::on_pushButton_GetTeams_clicked()
-{
-    qDebug () << "on_pushButton_GetTeams_clicked";
-
-    teams->toHtml([this](const QString& result) mutable
-    {
-        ui->listWidget_HomeTeams->clear();
-        ui->listWidget_VisitorsTeams->clear();
-        int init=0, fine=0;
-        QStringList listofTeam;
-
-        myChampionship->clearTeams();
-
-        while (init >= 0 && fine >= 0)
-        {
-            init = result.indexOf("<tr id=\"participant_", fine);
-            init = result.indexOf("<a href=", init);
-            init = result.indexOf(">", init) +1;
-            fine = result.indexOf("</a>", init);
-
-
-            QString thisTeam = result.mid(init, fine-init);
-
-           // if (!thisTeam.isEmpty())
-             //   myChampionship->addTeam(Team(thisTeam));
-            //  qDebug() << "Find from" << init << "to" << fine << " : "<< thisTeam;
-
-
-
-        }
-
-        ui->listWidget_HomeTeams->addItems(myChampionship->getListOfTeamsName());
-        ui->listWidget_VisitorsTeams->addItems(myChampionship->getListOfTeamsName());
-
-        ui->tableWidget_Season->setColumnCount(myChampionship->countTeams());
-        ui->tableWidget_Season->setRowCount(myChampionship->countTeams());
-
-        ui->tableWidget_Season->setHorizontalHeaderLabels(myChampionship->getListOfTeamsName());
-        ui->tableWidget_Season->setVerticalHeaderLabels(myChampionship->getListOfTeamsName());
-
-        ui->tableWidget_Season->horizontalHeader()->resizeSections(QHeaderView::Stretch);
-
-
-        ui->dockWidget_Teams->setEnabled(true);
-
-    });
-
-}
-*/
-void MainWindow::on_pushButton_GetGameID_clicked()
-{
-    qDebug() << "on_pushButton_GetGameID_clicked";
-
-    Team *Home = new Team();
-    Team *Away = new Team();
-    if (ui->tabWidget->currentIndex() == 0) // 2 column
-    {
-        Home = new Team(ui->listWidget_HomeTeams->currentItem()->text());
-        Away = new Team(ui->listWidget_VisitorsTeams->currentItem()->text());
-    }
-    else if (ui->tabWidget->currentIndex() ==1) // Table
-    {
-        int row = ui->tableWidget_Season->currentRow();
-        int col = ui->tableWidget_Season->currentColumn();
-        Home = new Team(ui->tableWidget_Season->horizontalHeaderItem(row)->text());
-        Away = new Team(ui->tableWidget_Season->verticalHeaderItem(col)->text());
-    }
-
-
-    currentGame = new Game();
-    currentGame = myChampionship->getGame(Home, Away);
-    connect(currentGame, SIGNAL(newDataGrabbed()), this, SLOT(on_currentGame_newDataGrabbed()));
-
-    ui->label_HomeTeam->setText(currentGame->homeTeam->getFullName());
-    ui->label_AwayTeam->setText(currentGame->awayTeam->getFullName());
-
-    ui->label_Score->setText(currentGame->printScore());
-    ui->label_Time->setText(currentGame->printTime());
-    //   ui->label_ID->setText(currentGame->getTime());
-
-    //ui->label_Score->setText(currentGame->getAwayTeam()->getFullName());
-
-    QString hyperlink =
-            QString("<a href=\"http://www.flashscore.ae/match/%1/#matchsummary\">%1</a>")
-            .arg(currentGame->getFlashScoreID());
-
-    //     ui->label_ID->setName(GameID);
-    ui->label_ID->setText(hyperlink);
-    ui->label_ID->setTextFormat(Qt::RichText);
-    ui->label_ID->setTextInteractionFlags(Qt::TextBrowserInteraction);
-    ui->label_ID->setOpenExternalLinks(true);
-
-
-    /*
-    results_championship->toHtml([this](const QString& result) mutable
-    {
-        int init = 0, fine = 0;
-        QString homeTeam = ui->listWidget_HomeTeams->currentItem()->text();
-        QString visitorTeam = ui->listWidget_VisitorsTeams->currentItem()->text();
-
-
-        QString GameInfo;
-        bool match_found = false;
-        while (init >= 0 && fine >= 0)
-        {
-            init = result.indexOf("<tr id=\"g_1_", fine);
-            fine = result.indexOf("</tr>", init);
-
-            QString thisGame = result.mid(init, fine-init);
-            int i_homeTeam = thisGame.indexOf(homeTeam);
-            int i_visitorTeam = thisGame.indexOf(visitorTeam);
-            // qDebug () << i_homeTeam << i_visitorTeam;
-            if (i_homeTeam < i_visitorTeam && i_homeTeam >= 0 && i_visitorTeam >= 0)
-            {
-                GameInfo = thisGame;
-                match_found = true;
-                break;
-            }
-
-        }
-
-        if (!match_found)
-        {
-            qDebug () << "Match not found";
-            results_championship->runJavaScript(QString("loadMoreGames()"),[](const QVariant &v) { qDebug() << v.toString(); });
-            myGameID = "";
-        }
-        //   qDebug() << GameInfo;
-
-
-
-        //  QString GameID;
-        init = GameInfo.indexOf("<tr id=\"g_1_") + QString("<tr id=\"g_1_").length();
-        fine = GameInfo.indexOf("\" class=\"", init);
-        if (fine >= 0  && init >= 0  && fine > init )
-            myGameID = GameInfo.mid(init, fine-init);
-        //   qDebug() << "GameID" << myGameID;
-
-        QString hyperlink =
-                QString("<a href=\"http://www.flashscore.ae/match/%1/#matchsummary\">%1</a>")
-                .arg(myGameID);
-
-        //     ui->label_ID->setName(GameID);
-        ui->label_ID->setText(hyperlink);
-        ui->label_ID->setTextFormat(Qt::RichText);
-        ui->label_ID->setTextInteractionFlags(Qt::TextBrowserInteraction);
-        ui->label_ID->setOpenExternalLinks(true);
-
-
-
-        QString GameHomeTeam;
-        init = GameInfo.indexOf(QString("<td class=\"cell_ab team-home"));
-        init = GameInfo.indexOf(QString(">"),init) + 1;
-        fine = GameInfo.indexOf(QString("</td>"), init);
-        if (fine >= 0  && init >= 0  && fine > init )
-            GameHomeTeam = GameInfo.mid(init, fine-init);
-
-        init = GameHomeTeam.indexOf(QString("<span class=\"padr"));
-        init = GameHomeTeam.indexOf(QString(">"),init) + 1;
-        fine = GameHomeTeam.indexOf(QString("</span>"), init);
-        if (fine >= 0  && init >= 0  && fine > init )
-            GameHomeTeam = GameHomeTeam.mid(init, fine-init);
-
-        //   qDebug() << "GameHomeTeam" << GameHomeTeam;
-        ui->label_HomeTeam->setText(GameHomeTeam);
-
-
-
-
-        QString GameAwayTeam;
-        init = GameInfo.indexOf(QString("<td class=\"cell_ac team-away"));
-        init = GameInfo.indexOf(QString(">"),init) + 1;
-        fine = GameInfo.indexOf(QString("</td>"), init);
-        if (fine >= 0  && init >= 0  && fine > init )
-            GameAwayTeam = GameInfo.mid(init, fine-init);
-
-        init = GameAwayTeam.indexOf(QString("<span class=\"padr"));
-        init = GameAwayTeam.indexOf(QString(">"),init) + 1;
-        fine = GameAwayTeam.indexOf(QString("</span>"), init);
-        if (fine >= 0  && init >= 0  && fine > init )
-            GameAwayTeam = GameAwayTeam.mid(init, fine-init);
-
-        //    qDebug() << "GameAwayTeam" << GameAwayTeam;
-        ui->label_AwayTeam->setText(GameAwayTeam);
-
-
-
-
-
-        QString GameTime;
-        init = GameInfo.indexOf(QString("<td class=\"cell_ad time"));
-        init = GameInfo.indexOf(QString(">"),init) + 1;
-        fine = GameInfo.indexOf(QString("</td>"), init);
-        if (fine >= 0  && init >= 0  && fine > init )
-            GameTime = GameInfo.mid(init, fine-init);
-        //   qDebug() << "GameTime" << GameTime;
-        ui->label_Time->setText(GameTime);
-
-
-
-
-
-        QString GameScore;
-        init = GameInfo.indexOf(QString("<td class=\"cell_sa score"));
-        init = GameInfo.indexOf(QString(">"),init) + 1;
-        fine = GameInfo.indexOf(QString("</td>"), init);
-        if (fine >= 0  && init >= 0  && fine > init )
-            GameScore = GameInfo.mid(init, fine-init).replace("&nbsp;"," ");
-        //   qDebug() << "GameScore" << GameScore;
-        ui->label_Score->setText(GameScore);
-
-
-
-
-        on_pushButton_LoadGame_clicked();
-    });
-*/
-
-}
-
-//void MainWindow::on_pushButton_LoadChampionship_clicked()
-//{
-/*  qDebug() << "on_pushButton_LoadChampionship_clicked";
-
-    QString ChampionshipName = QString("%1-%2")
-            .arg(ui->comboBox_league->currentText())
-            .arg(ui->comboBox_season->currentText());
-
-    myChampionship.setName(ChampionshipName);
-
-    QString URL;
-    URL = QString("http://www.flashscore.ae/football/%1/teams/")
-            .arg(ChampionshipName);
-
-    //isLoaded = false;
-    teams->load(QUrl(URL));
-
-
-    URL = QString("http://www.flashscore.ae/football/%1/results/")
-            .arg(ChampionshipName);
-
-    // isLoaded = false;
-    results_championship->load(QUrl(URL));*/
-//}
-
-/*
-void MainWindow::on_pushButton_LoadGame_clicked()
-{
-    QString URL;
-    URL = QString("http://www.flashscore.ae/match/%1/#matchsummary")
-            .arg(myGameID);
-
-    qDebug() << URL;
-    //isLoaded = false;
-    results_game->load(QUrl(URL));
-
-}
-*/
-
+//////////////////////////////////////////////////////////////
+/// \brief MainWindow::on_pushButton_GetGameDetails_clicked
+/// Loads details for the current game form the flashscore.ea match link
 void MainWindow::on_pushButton_GetGameDetails_clicked()
 {
     qDebug() << "on_pushButton_GetGameDetails_clicked";
-
-    currentGame->loadFlashScoreInformation();
-
-    /* results_game->toHtml([this](const QString& result) mutable
+    currentGameWebEngine->toHtml([this](const QString& result) mutable
     {
         int init = 0, fine = 0;
         int i=0;
 
         // Focus on tabel only
-
         QString Table;
         init = result.indexOf("<table id=\"parts", fine) + QString("<table id=\"parts").length();
         fine = result.indexOf("</table>", init);
@@ -423,22 +188,20 @@ void MainWindow::on_pushButton_GetGameDetails_clicked()
             Table = result.mid(init, fine-init);
 
 
+        // qDebug() << result;
+
         int initHome = 0;
         int fineHome = 0;
 
         int initAway= 0;
         int fineAway = 0;
 
-        ui->listWidget_eventAway->clear();
         ui->listWidget_eventHome->clear();
-
-        QString EventString;
-
+        ui->listWidget_eventAway->clear();
+        currentGame->clearEvents();
 
         while (initHome >= 0 && fineHome >= 0 && i < 30)
         {
-
-
             {
                 QString GameEvent;
 
@@ -461,6 +224,7 @@ void MainWindow::on_pushButton_GetGameDetails_clicked()
                 }
 
                 EventBase event;
+                event.setHomeTeam();
 
                 QString TimeEvent;
                 if (wrapper.length() > 20)
@@ -502,13 +266,18 @@ void MainWindow::on_pushButton_GetGameDetails_clicked()
                     {
                         TypeEvent = GameEvent.mid(init_typeevent, fine_typeevent-init_typeevent);
                         event.setDescription(TypeEvent);
+                        event.setLabel(TypeEvent);
                     }
                 }
+                //  homeEvents.append(event);
 
+                qDebug() << "Home Event Grabbed : " << event.prettyPrint();
                 ui->listWidget_eventHome->addItem(event.prettyPrint());
-
+                if(!event.isEmpty())
+                    currentGame->addEvent(event);
 
             }
+
             {
 
 
@@ -533,6 +302,7 @@ void MainWindow::on_pushButton_GetGameDetails_clicked()
                 }
 
                 EventBase event;
+                event.setAwayTeam();
 
                 QString TimeEvent;
                 if (wrapper.length() > 20)
@@ -574,108 +344,291 @@ void MainWindow::on_pushButton_GetGameDetails_clicked()
                     {
                         TypeEvent = GameEvent.mid(init_typeevent, fine_typeevent-init_typeevent);
                         event.setDescription(TypeEvent);
+                        event.setLabel(TypeEvent);
                     }
                 }
 
 
+                //awayEvents.append(event);
 
+                qDebug() << "Away Event Grabbed : " << event.prettyPrint();
                 ui->listWidget_eventAway->addItem(event.prettyPrint());
-
+                if(!event.isEmpty())
+                    currentGame->addEvent(event);
             }
 
             i++;
         }
-    });*/
+        //emit newDataGrabbed();
+    });
+
 }
 
 
-void MainWindow::on_currentGame_newDataGrabbed()
+
+
+
+void MainWindow::on_listWidget_HomeTeams_clicked(const QModelIndex &index)
 {
-    // currentGame->
+    qDebug() << "on_listWidget_HomeTeams_clicked : " << ui->listWidget_HomeTeams->currentRow() << ui->listWidget_AwayTeams->currentRow();
+    if ( (ui->listWidget_AwayTeams->currentRow() > 0) && (index.row() > 0) )
+    {
+        Team * Home = new Team(ui->listWidget_HomeTeams->currentItem()->text());
+        Team * Away = new Team(ui->listWidget_AwayTeams->currentItem()->text());
+        Game * game = myChampionship->getGame(Home, Away);
 
-    qDebug() << "on_currentGame_newDataGrabbed";
+        on_pushButton_GetGameID_clicked(game);
+    }
+}
 
-    ui->listWidget_eventAway->clear();
+void MainWindow::on_listWidget_AwayTeams_clicked(const QModelIndex &index)
+{
+    qDebug() << "on_listWidget_AwayTeams_clicked : " << ui->listWidget_HomeTeams->currentRow() << ui->listWidget_AwayTeams->currentRow();
+    if ( (ui->listWidget_HomeTeams->currentRow() > 0) && (index.row() > 0) )
+    {
+        Team * Home = new Team(ui->listWidget_HomeTeams->currentItem()->text());
+        Team * Away = new Team(ui->listWidget_AwayTeams->currentItem()->text());
+        Game * game = myChampionship->getGame(Home, Away);
+
+        on_pushButton_GetGameID_clicked(game);
+    }
+}
+
+
+void MainWindow::on_tableWidget_Season_cellClicked(int row, int column)
+{
+    qDebug() << "on_tableWidget_Season_itemActivated";
+    Game * game = myChampionship->getGame(
+                ui->tableWidget_Season->horizontalHeaderItem(row)->text(),
+                ui->tableWidget_Season->verticalHeaderItem(column)->text()
+                );
+
+    on_pushButton_GetGameID_clicked(game);
+}
+
+
+void MainWindow::on_pushButton_GetGameID_clicked(Game* game)
+{
+    qDebug() << "on_pushButton_GetGameID_clicked";
+
+
+    currentGame = new Game();
+    currentGame = game;
+    connect(currentGame, SIGNAL(newDataGrabbed()), this, SLOT(on_currentGame_newDataGrabbed()));
+
+
+    ui->label_HomeTeam->setText(currentGame->getHomeTeam()->getFullName());
+    ui->label_AwayTeam->setText(currentGame->getAwayTeam()->getFullName());
+
+    ui->label_Score->setText(currentGame->printScore());
+    ui->label_Time->setText(currentGame->printTime());
+    //   ui->label_ID->setText(currentGame->getTime());
+
+    //ui->label_Score->setText(currentGame->getAwayTeam()->getFullName());
+
+    QString hyperlink =
+            QString("<a href=\"http://www.flashscore.ae/match/%1/#matchsummary\">%1</a>")
+            .arg(currentGame->getFlashScoreID());
+
+    //     ui->label_ID->setName(GameID);
+    ui->label_ID->setText(hyperlink);
+    ui->label_ID->setTextFormat(Qt::RichText);
+    ui->label_ID->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    ui->label_ID->setOpenExternalLinks(true);
+
+
+    QString fulllink = QString("http://www.flashscore.ae/match/%1/#matchsummary").arg(currentGame->getFlashScoreID());
+    ui->label_linkGame->setText(QString("<a href=\"%1\">%1</a>").arg(fulllink));
+    ui->label_linkGame->setTextFormat(Qt::RichText);
+    ui->label_linkGame->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    ui->label_linkGame->setOpenExternalLinks(true);
+
+
     ui->listWidget_eventHome->clear();
-
-    foreach (EventBase event, currentGame->getHomeEvents())
+    ui->listWidget_eventAway->clear();
+    foreach (EventBase event, currentGame->getEvents())
     {
-        ui->listWidget_eventHome->addItem(event.prettyPrint());
+        if (event.isHomeTeam())
+        {
+            qDebug() << "Event added to Home list : " << event.prettyPrint();
+            ui->listWidget_eventHome->addItem(event.prettyPrint());
+            ui->listWidget_eventAway->addItem(EventBase().prettyPrint());
+        }
+        else if (event.isAwayTeam())
+        {
+            qDebug() << "Event added to Away list : " << event.prettyPrint();
+            ui->listWidget_eventHome->addItem(EventBase().prettyPrint());
+            ui->listWidget_eventAway->addItem(event.prettyPrint());
+        }
     }
 
-    foreach (EventBase event, currentGame->getAwayEvents())
-    {
-        ui->listWidget_eventAway->addItem(event.prettyPrint());
-    }
+    if (currentGame->isEmpty())
+        myChampionship->loadMoreGames();
+    else
+        loadFlashScoreInformation();
+
 }
 
 
 
-void MainWindow::on_comboBox_league_currentIndexChanged(const QString &arg1)
-{
-    updateChampionshipLinks();
-}
-
-void MainWindow::on_comboBox_season_currentIndexChanged(const QString &arg1)
-{
-    updateChampionshipLinks();
-}
-
-void MainWindow::updateChampionshipLinks()
-{
-
-    QString ChampionshipName = QString("%1-%2-%3")
-            .arg(ui->comboBox_league->currentText())
-            .arg(ui->comboBox_season->currentText().toInt())
-            .arg(ui->comboBox_season->currentText().toInt() + 1);
-
-    QString teamsLink;
-    teamsLink = QString("http://www.flashscore.ae/football/%1/teams/")
-            .arg(ChampionshipName);
-
-    {
-        QString hyperlink =
-                QString("<a href=\"%1\">%1</a>")
-                .arg(teamsLink);
-
-        ui->label_linkTeams->setText(hyperlink);
-        ui->label_linkTeams->setTextFormat(Qt::RichText);
-        ui->label_linkTeams->setTextInteractionFlags(Qt::TextBrowserInteraction);
-        ui->label_linkTeams->setOpenExternalLinks(true);
-    }
 
 
-    QString resultsLink;
-    resultsLink = QString("http://www.flashscore.ae/football/%1/results/")
-            .arg(ChampionshipName);
-
-    {
-        QString hyperlink =
-                QString("<a href=\"%1\">%1</a>")
-                .arg(resultsLink);
-
-        ui->label_linkResults->setText(hyperlink);
-        ui->label_linkResults->setTextFormat(Qt::RichText);
-        ui->label_linkResults->setTextInteractionFlags(Qt::TextBrowserInteraction);
-        ui->label_linkResults->setOpenExternalLinks(true);
-    }
-    return;
-}
 
 void MainWindow::on_pushButton_FindYoutubeVideo_clicked()
 {
     QString link = QString("https://www.youtube.com/results?search_query=%1+%2")
-            .arg(currentGame->homeTeam->getFullName())
-            .arg(currentGame->awayTeam->getFullName());
+            .arg(currentGame->getHomeTeam()->getFullName())
+            .arg(currentGame->getAwayTeam()->getFullName());
     QDesktopServices::openUrl(QUrl(link));
 }
 
 void MainWindow::on_pushButton_ExportJSON_clicked()
 {
+    //  QString filename =  QFileDialog::getSaveFileName(this, tr("Saving path"), QDir::homePath(),"*.json");
 
+    // if (!filename.isEmpty())
+    myChampionship->saveJSON(QDir::homePath() + "/FootballActivity/" + myChampionship->printChampionship().replace("/","_") + ".json");
 }
+
+
+void MainWindow::on_pushButton_OpenJSON_clicked()
+{
+    myChampionship->loadJSON(QDir::homePath() + "/FootballActivity/" + myChampionship->printChampionship().replace("/","_") + ".json");
+}
+
 
 void MainWindow::on_pushButton_launchJS_clicked()
 {
     myChampionship->launchJS();
+}
+
+
+
+
+
+void MainWindow::loadFlashScoreInformation()
+{
+    //qDebug() << "opening : " << Link;
+    //  currentGameWebEngine->load(Link);
+
+    QEventLoop loop;
+    connect(currentGameWebEngine,SIGNAL(loadFinished(bool)), &loop, SLOT(quit()));
+
+    ui->pushButton_GetGameDetails->setEnabled(false);
+
+    QString Link = QString("http://www.flashscore.ae/match/%1/#match-summary").arg(currentGame->getFlashScoreID());
+    currentGameWebEngine->load(Link);
+
+    qDebug() << "loading ...";
+    loop.exec();
+    qDebug() << "... loaded";
+
+    // QThread::msleep(1000);
+    ui->pushButton_GetGameDetails->setEnabled(true);
+}
+
+
+
+
+void MainWindow::on_pushButton_BatchChampionship_clicked()
+{
+
+    foreach (Game *game, myChampionship->getAllGames())
+    {
+
+        currentGame = game;
+        QString Link = QString("http://www.flashscore.ae/match/%1/#match-summary").arg(game->getFlashScoreID());
+        qDebug() << "opening : " << Link;
+
+
+        QEventLoop loop;
+        connect(currentGameWebEngine,SIGNAL(loadFinished(bool)), &loop, SLOT(quit()));
+        currentGameWebEngine->load(Link);
+        qDebug() << "loading ...";
+        loop.exec();
+        qDebug() << "... loaded";
+
+
+
+        QEventLoop loop2;
+        QTimer::singleShot(2000, &loop2, SLOT(quit()));
+        loop2.exec();
+        qDebug() << "... doublechecked!";
+
+
+        on_pushButton_GetGameDetails_clicked();
+
+
+
+        qDebug() << "... wait again...";
+        QEventLoop loop3;
+        QTimer::singleShot(2000, &loop3, SLOT(quit()));
+        loop3.exec();
+
+
+        myChampionship->saveJSON(QDir::homePath() + "/FootballActivity/" + myChampionship->printChampionship().replace("/","_") + ".json");
+
+    }
+
+}
+
+
+void MainWindow::on_pushButton_BatchAllChampionship_clicked()
+{
+
+
+    for (int year = 2016; year > 2010; year--)
+    {
+        for (int i_league = 0; i_league < ui->comboBox_league->count(); i_league++)
+        {
+            ui->comboBox_league->setCurrentIndex(i_league);
+            ui->spinBox_year->setValue(year);
+
+            myChampionship->setLeague(ui->comboBox_league->itemText(i_league));
+            myChampionship->setYear(year);
+
+            QString filename = QDir::homePath() + "/FootballActivity/" + myChampionship->printChampionship().replace("/","_") + ".json";
+            qDebug() << filename;
+            myChampionship->loadJSON(filename);
+
+            foreach (Game *game, myChampionship->getAllGames())
+            {
+
+                currentGame = game;
+                QString Link = QString("http://www.flashscore.ae/match/%1/#match-summary").arg(game->getFlashScoreID());
+                qDebug() << "opening : " << Link;
+
+
+                QEventLoop loop;
+                connect(currentGameWebEngine,SIGNAL(loadFinished(bool)), &loop, SLOT(quit()));
+                currentGameWebEngine->load(Link);
+                qDebug() << "loading ...";
+                loop.exec();
+                qDebug() << "... loaded";
+
+
+
+
+
+                QEventLoop loop2;
+                QTimer::singleShot(2000, &loop2, SLOT(quit()));
+                loop2.exec();
+                qDebug() << "... doublechecked!";
+
+
+                on_pushButton_GetGameDetails_clicked();
+
+
+
+                qDebug() << "... wait again...";
+                QEventLoop loop3;
+                QTimer::singleShot(2000, &loop3, SLOT(quit()));
+                loop3.exec();
+
+
+                myChampionship->saveJSON(QDir::homePath() + "/FootballActivity/" + myChampionship->printChampionship().replace("/","_") + ".json");
+
+            }
+        }
+    }
 }

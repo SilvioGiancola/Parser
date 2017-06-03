@@ -7,6 +7,8 @@
 #include <QWebEnginePage>
 #include <QObject>
 #include <QEventLoop>
+#include <QFile>
+#include <QFileDialog>
 
 #include <game.h>
 #include <team.h>
@@ -18,28 +20,50 @@ public:
     Championship();
     Championship(QString Name, int Year);
 
+
+    bool hasTeam(Team *thisteam);
     bool addTeam(Team *team);
+    QList<Team*> getAllTeams();
     QStringList getListOfTeamsName();
     void printListofTeams();
     int countTeams();
 
-    bool addGame(Game *newgame);
+
+    bool hasGame(Game *thisgame);
+    //bool fillGame(Game *newgame);
     QList<Game*> getAllGames();
     int countGames();
-    void clearTeams();
+    Game* getGame(Game * thisgame);
     Game* getGame(Team * homeTeam, Team * awayTeam);
+    Game* getGame(QString homeTeam, QString awayTeam);
 
-    bool setName(QString Name);
 
 
-    void loadTeams(QString Name, int Year);
-    void loadGames(QString Name, int Year);
+
+    void loadTeams();
+    void loadGames();
     void loadMoreGames();
     void launchJS();
 
+
+    QString printChampionship();
+
+
+    QString getLeague();
+    int getYear();
+
+
+   void saveJSON(QString filename);
+   bool loadJSON(QString filename);
+public slots:
+    void setLeague(QString);
+    void setYear(int);
+
+
 private:
-    QString Name;
+    QString League;
     int Year;
+
     QList<Team*> Teams;
 
     QList<Game*> Games;
@@ -58,7 +82,7 @@ private slots:
 
 signals:
     void newTeamAdded();
-    void newGameAdded(Game* newgame);
+    void gameEdited(Game* newgame);
 };
 
 #endif // CHAMPIONSHIP_H
