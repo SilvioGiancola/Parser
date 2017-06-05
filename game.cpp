@@ -39,6 +39,15 @@ bool Game::isEmpty()
     return ((*this) == Game());
 }
 
+QUrl Game::getLocalVideoURL()
+{
+    return VideoLink;
+}
+
+void Game::setLocalVideoURL(QUrl url)
+{
+    VideoLink = url;
+}
 
 bool Game::hasVideo()
 {
@@ -215,6 +224,8 @@ bool Game::importJSonObject(QJsonObject GameJson, QString gameKeyID)
         this->parseTime(GameJson["gameDate"].toString());
         this->parseScore(GameJson["gameScore"].toString());
 
+        this->YoutubeLink = QUrl::fromUserInput(GameJson["UrlYoutube"].toString());
+        this->VideoLink = QUrl::fromUserInput(GameJson["UrlLocal"].toString());
 
         QJsonArray annotations = GameJson["annotations"].toArray();
 
@@ -280,6 +291,7 @@ QJsonObject Game::exportJSonObject()
     // res["subset"] = "football";
     // res["resolution"] = "320x240";
     //  res["duration"] = 90*60;
-    // res["url"] = this->YoutubeLink.toString();
+    res["UrlYoutube"] = this->YoutubeLink.toString();
+    res["UrlLocal"] = this->VideoLink.toString();
     return res;
 }

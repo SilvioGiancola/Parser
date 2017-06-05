@@ -149,6 +149,7 @@ Game* Championship::getGame(Game * thisgame)
             return game;
         }
     }
+    qDebug() << "Your game does not exist..." ;
     return new Game();
 }
 
@@ -279,97 +280,31 @@ void Championship::on_FlashScoreWebEngine_loadFinished(bool ok)
 
 
 
-       /* OLD Team Parsing Method
-
-            QString GameHomeTeam;
-            init = GameInfo.indexOf(QString("<td class=\"cell_ab team-home"));
-            init = GameInfo.indexOf(QString(">"),init) + 1;
-            fine = GameInfo.indexOf(QString("</td>"), init);
-            if (fine >= 0  && init >= 0  && fine > init )
-                GameHomeTeam = GameInfo.mid(init, fine-init);
-
-            init = GameHomeTeam.indexOf(QString("<span class=\"pad"));
-            init = GameHomeTeam.indexOf(QString(">"),init) + 1;
-            fine = GameHomeTeam.indexOf(QString("</span>"), init);
-            if (fine >= 0  && init >= 0  && fine > init )
-                GameHomeTeam = GameHomeTeam.mid(init, fine-init);
-
-
-
-
-            QString GameAwayTeam;
-            init = GameInfo.indexOf(QString("<td class=\"cell_ac team-away"));
-            init = GameInfo.indexOf(QString(">"),init) + 1;
-            fine = GameInfo.indexOf(QString("</td>"), init);
-            if (fine >= 0  && init >= 0  && fine > init )
-                GameAwayTeam = GameInfo.mid(init, fine-init);
-
-            init = GameAwayTeam.indexOf(QString("<span class=\"pad"));
-            init = GameAwayTeam.indexOf(QString(">"),init) + 1;
-            fine = GameAwayTeam.indexOf(QString("</span>"), init);
-            if (fine >= 0  && init >= 0  && fine > init )
-                GameAwayTeam = GameAwayTeam.mid(init, fine-init);*/
-
-
 
             Game* thisGame = this->getGame(GameHomeTeam, GameAwayTeam);
 
-            //if (thisGame == new Game())
+            if (!(*thisGame == Game()))
+            {
 
-            thisGame->setflashScoreID(GameID);
-
-
-/* OLD TIME pasing method
-            QString GameTime;
-            init = GameInfo.indexOf(QString("<td class=\"cell_ad time"));
-            init = GameInfo.indexOf(QString(">"),init) + 1;
-            fine = GameInfo.indexOf(QString("</td>"), init);
-            if (fine >= 0  && init >= 0  && fine > init )
-                GameTime = GameInfo.mid(init, fine-init);*/
-
-            QString GameTime = tds.item(1).toElement().text();
+                thisGame->setflashScoreID(GameID);
 
 
-            GameTime = QString("%1.%2").arg(Year).arg(GameTime);
-            QDateTime gameTime = QDateTime::fromString(GameTime, "yyyy.dd.MM. hh:mm");
-          //  gameTime.date().year() = Year;
-           if (gameTime.date().month()<8)
-           {
-               qDebug() << "Adding a year " << Year ;
-               gameTime.setDate(gameTime.date().addYears(1));
+                QString GameTime = tds.item(1).toElement().text();
+                GameTime = QString("%1.%2").arg(Year).arg(GameTime);
+                QDateTime gameTime = QDateTime::fromString(GameTime, "yyyy.dd.MM. hh:mm");
+                if (gameTime.date().month()<8)
+                    gameTime.setDate(gameTime.date().addYears(1));
+                thisGame->setTime(gameTime);
+
+
+
+                QString GameScore = tds.item(4).toElement().text();
+                thisGame->setHomeTeamScore(GameScore.mid(0,1).toInt());
+                thisGame->setAwayTeamScore(GameScore.mid(2,1).toInt());
+
+
+                emit gameEdited(thisGame);
             }
-               //     QDateTime gameTime(QDate(now.date().year(), 12, 25), QTime(0, 0));
-            // if (gameTime.date().month()<8) gameTime = gameTime.addYears(1);
-            qDebug() << "GameTime : " << gameTime.toString("yyyy.dd.MM. hh:mm");
-            //thisGame->parseTime(GameTime, QString("dd.MM. hh:mm"));
-            thisGame->setTime(gameTime);
-
-            //ui->label_Time->setText(GameTime);
-
-
-
-/* OLD Score parsing method
-
-            QString GameScore;
-            init = GameInfo.indexOf(QString("<td class=\"cell_sa score"));
-            init = GameInfo.indexOf(QString(">"),init) + 1;
-            fine = GameInfo.indexOf(QString("</td>"), init);
-            if (fine >= 0  && init >= 0  && fine > init )
-                GameScore = GameInfo.mid(init, fine-init).replace("&nbsp;"," ");
-            // qDebug() << "GameScore" << GameScore;
-
-            thisGame->parseScore(GameScore);
-*/
-
-            QString GameScore = tds.item(4).toElement().text();
-
-            thisGame->setHomeTeamScore(GameScore.mid(0,1).toInt());
-            thisGame->setAwayTeamScore(GameScore.mid(2,1).toInt());
-
-
-            emit gameEdited(thisGame);
-
-          //  this->fillGame(thisGame);
         }
 
 
@@ -409,7 +344,8 @@ void Championship::saveJSON(QString filename)
 
         QJsonObject Championship;
         foreach (Game *game, getAllGames())
-            Championship[game->getFlashScoreID()] = game->exportJSonObject();
+            if (!game->getFlashScoreID().isEmpty())
+                Championship[game->getFlashScoreID()] = game->exportJSonObject();
         Dataset["Championship"] = Championship;
 
 

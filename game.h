@@ -27,6 +27,8 @@ public:
     QString getFlashScoreID();
 
     bool hasVideo();
+    QUrl getLocalVideoURL();
+    void setLocalVideoURL(QUrl url);
 
     void setHomeTeam(Team *HomeTeam);
     void setAwayTeam(Team *AwayTeam);

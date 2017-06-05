@@ -9,7 +9,6 @@
 #include <QEventLoop>
 #include <QFile>
 #include <QFileDialog>
-
 #include <QDomDocument>
 
 #include <game.h>

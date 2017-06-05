@@ -2,15 +2,12 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QWebEngineView>
-#include <QWebEnginePage>
-//#include <QXmlSimpleReader>
 #include <QString>
-#include <QThread>
 #include <QDesktopServices>
 #include <QTimer>
-
+#include <QMediaPlayer>
 #include <QMutexLocker>
+
 
 #include <eventgoal.h>
 #include <championship.h>
@@ -42,7 +39,7 @@ private slots:
     void on_pushButton_LoadMore_clicked();
 
 
-    void on_pushButton_GetGameID_clicked(Game *game);
+    void on_pushButton_GetGameID_clicked();
 
 
 
@@ -81,6 +78,12 @@ private slots:
 
     void on_listWidget_Games_clicked(const QModelIndex &index);
 
+    void on_pushButton_VideoPlay_clicked();
+
+    void on_lineEdit_VideoPath_textChanged(const QString &arg1);
+
+    void on_pushButton_OpenVideoFile_clicked();
+
 private:
     Ui::MainWindow *ui;
     QMutex *mux;
@@ -88,7 +91,7 @@ private:
     Championship *myChampionship;
 
     Game *currentGame;
-
+    QMediaPlayer *player;
 
     QWebEnginePage *currentGameWebEngine;
 
