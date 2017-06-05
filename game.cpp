@@ -7,6 +7,8 @@ Game::Game()
 
     homeTeamScore = 0;
     awayTeamScore = 0;
+
+    VideoLink = QUrl();
 }
 
 Game::Game(Team *Home, Team *Away)
@@ -16,6 +18,8 @@ Game::Game(Team *Home, Team *Away)
 
     homeTeamScore = 0;
     awayTeamScore = 0;
+
+    VideoLink = QUrl();
 }
 
 
@@ -33,6 +37,12 @@ bool Game::isEmpty()
    // qDebug() << this->printScoreWithTeamNames();
    // qDebug() << Game().printScoreWithTeamNames();
     return ((*this) == Game());
+}
+
+
+bool Game::hasVideo()
+{
+    return VideoLink.isValid();
 }
 
 
@@ -148,6 +158,10 @@ bool Game::parseScore(QString score) //format is "4 - 1"
 
 
 
+QDateTime Game::getDateTime()
+{
+    return gameTime;
+}
 
 
 QString Game::printTime()
@@ -158,9 +172,16 @@ QString Game::printTime()
 bool Game::parseTime(QString time, QString format)
 {
     gameTime = QDateTime::fromString(time, format);
-    if (gameTime.date().month()<8) gameTime = gameTime.addYears(1);
     return gameTime.isValid();
 }
+
+bool Game::setTime(QDateTime time)
+{
+    gameTime = time;
+   // if (gameTime.date().month()<8) gameTime = gameTime.addYears(1);
+    return gameTime.isValid();
+}
+
 
 
 
@@ -208,9 +229,8 @@ bool Game::importJSonObject(QJsonObject GameJson, QString gameKeyID)
 
             QJsonArray segments = annotation.toObject()["segment"].toArray();
 
-            event.setStartTime((segments.at(0).toDouble()));
-            event.setEndTime((segments.at(1).toDouble()));
-
+            event.parseStartTime(segments.at(0).toString());
+            event.parseEndTime(segments.at(1).toString());
 
             if (QString::compare(annotation.toObject()["team"].toString(),"home") == 0)
                 event.setHomeTeam();
@@ -242,8 +262,8 @@ QJsonObject Game::exportJSonObject()
             QJsonObject annotationObject;
 
             QJsonArray segment;
-            segment.append(event.getStartTimeInSeconds());
-            segment.append(event.getEndTimeInSeconds());
+            segment.append(event.printStartTime());
+            segment.append(event.printEndTime());
             annotationObject["segment"] = segment;
             annotationObject["label"] = event.getLabel();
             annotationObject["team"] = event.isHomeTeam()?"home":"away";

@@ -26,6 +26,7 @@ public:
     void setflashScoreID(QString ID);
     QString getFlashScoreID();
 
+    bool hasVideo();
 
     void setHomeTeam(Team *HomeTeam);
     void setAwayTeam(Team *AwayTeam);
@@ -46,8 +47,10 @@ public:
 
     QString printScore();
     QString printScoreWithTeamNames();
+    QDateTime getDateTime();
     QString printTime();
     bool parseTime(QString time, QString format = "dd/MM/yyyy - hh:mm");
+    bool setTime(QDateTime time);
     bool parseScore(QString score);
 
 
@@ -74,6 +77,7 @@ private:
     QList<EventBase> Events;
 
     QUrl YoutubeLink;
+    QUrl VideoLink;
 
     QDateTime gameTime;
 

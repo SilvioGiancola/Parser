@@ -30,6 +30,12 @@ public:
     bool setStartTime(double value);
     bool setEndTime(double value);
 
+
+    QString printStartTime();
+    QString printEndTime();
+    bool parseStartTime(QString value);
+    bool parseEndTime(QString value);
+
     // Description handling
     void setDescription(QString value);
     QString getDescription();
@@ -49,7 +55,10 @@ public:
     void setAwayTeam();
 
     bool isEmpty();
+
 protected:
+
+
     QTime StartTime;
     QTime EndTime;
     QString description;

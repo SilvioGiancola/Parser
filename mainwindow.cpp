@@ -112,15 +112,22 @@ void MainWindow::on_myChampionship_newTeamAdded()
 
     ui->tableWidget_Season->horizontalHeader()->resizeSections(QHeaderView::Stretch);
 
+
+    //handle list of Gaems
+    ui->listWidget_Games->clear();
+
+
     ui->dockWidget_Teams->setEnabled(listofTeam.count() > 0);
 }
 
 void MainWindow::on_myChampionship_gameEdited(Game * newGame)
-{
+{    
+    qDebug() << "on_myChampionship_gameEdited : " << newGame->printScoreWithTeamNames();
 
     QMutexLocker muxlocker(mux);
 
-    qDebug() << "on_myChampionship_gameEdited : " << newGame->printScoreWithTeamNames();
+
+    // Setting cross games
     int col = 0, row = 0;
 
     for ( int i = 0; i < ui->tableWidget_Season->columnCount(); i++)
@@ -133,9 +140,13 @@ void MainWindow::on_myChampionship_gameEdited(Game * newGame)
 
     QTableWidgetItem *setdes = new QTableWidgetItem();
     setdes->setText(newGame->printScore());
-    // qDebug() << "putting in (row:" << row << ", col:" << col<<")";
+    if (newGame->hasVideo())    setdes->setBackgroundColor(QColor(Qt::green));
+    else                        setdes->setBackgroundColor(QColor(Qt::red));
     ui->tableWidget_Season->setItem(row,col,setdes);
 
+
+    // Setting list of game
+    ui->listWidget_Games->addItem(newGame->printScoreWithTeamNames());
 }
 
 
@@ -407,6 +418,17 @@ void MainWindow::on_tableWidget_Season_cellClicked(int row, int column)
 }
 
 
+void MainWindow::on_listWidget_Games_clicked(const QModelIndex &index)
+{
+    qDebug() << "on_listWidget_Games_clicked";
+    foreach (Game * myGame, myChampionship->getAllGames())
+        if (QString::compare(index.data().toString(), myGame->printScoreWithTeamNames()) == 0)
+            on_pushButton_GetGameID_clicked(myGame);
+
+}
+
+
+
 void MainWindow::on_pushButton_GetGameID_clicked(Game* game)
 {
     qDebug() << "on_pushButton_GetGameID_clicked";
@@ -476,9 +498,11 @@ void MainWindow::on_pushButton_GetGameID_clicked(Game* game)
 
 void MainWindow::on_pushButton_FindYoutubeVideo_clicked()
 {
-    QString link = QString("https://www.youtube.com/results?search_query=%1+%2")
+    QString link = QString("https://www.youtube.com/results?search_query=%1+%2+%3+full+game&sp=EgIYAg%253D%253D")
             .arg(currentGame->getHomeTeam()->getFullName())
-            .arg(currentGame->getAwayTeam()->getFullName());
+            .arg(currentGame->getAwayTeam()->getFullName())
+            .arg(currentGame->getDateTime().toString("yyyy+MM+dd"));
+
     QDesktopServices::openUrl(QUrl(link));
 }
 

@@ -10,6 +10,8 @@
 #include <QFile>
 #include <QFileDialog>
 
+#include <QDomDocument>
+
 #include <game.h>
 #include <team.h>
 

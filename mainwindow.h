@@ -79,6 +79,8 @@ private slots:
 
     void on_pushButton_BatchAllChampionship_clicked();
 
+    void on_listWidget_Games_clicked(const QModelIndex &index);
+
 private:
     Ui::MainWindow *ui;
     QMutex *mux;

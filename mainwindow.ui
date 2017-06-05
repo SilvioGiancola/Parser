@@ -67,11 +67,11 @@
         <bool>true</bool>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="tab">
         <attribute name="title">
-         <string>List</string>
+         <string>List Teams</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_4">
          <item row="0" column="0">
@@ -101,7 +101,7 @@
          <bool>true</bool>
         </property>
         <attribute name="title">
-         <string>Cross</string>
+         <string>Cross Table</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_5">
          <item row="0" column="0">
@@ -127,6 +127,16 @@
             </property>
            </column>
           </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab_3">
+        <attribute name="title">
+         <string>List Games</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="0">
+          <widget class="QListWidget" name="listWidget_Games"/>
          </item>
         </layout>
        </widget>
@@ -168,6 +178,11 @@
            <string>france/ligue-1</string>
           </property>
          </item>
+         <item>
+          <property name="text">
+           <string>europe/uefa-champions-league</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item>
@@ -188,7 +203,7 @@
      <item row="6" column="1">
       <widget class="QPushButton" name="pushButton_BatchAllChampionship">
        <property name="text">
-        <string>Batch All Championship</string>
+        <string>Batch All Championships</string>
        </property>
       </widget>
      </item>

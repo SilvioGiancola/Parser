@@ -68,11 +68,6 @@ void EventBase::setTime(double value)
     setStartTime(getEndTimeInSeconds() - 60);
     return;
 }
-/*
-QTime EventBase::getTime()
-{
-    return time;
-}*/
 
 QTime EventBase::getStartTime()
 {
@@ -92,6 +87,31 @@ QTime EventBase::getEndTime()
 double EventBase::getEndTimeInSeconds()
 {
     return QTime(0,0,0).secsTo(EndTime);
+}
+
+
+
+
+QString EventBase::printStartTime()
+{
+    return StartTime.toString("h - mm:ss");
+}
+
+QString EventBase::printEndTime()
+{
+    return EndTime.toString("h - mm:ss");
+}
+
+bool EventBase::parseStartTime(QString value)
+{
+    StartTime = QTime::fromString(value, "h - mm:ss");
+    return false;
+}
+
+bool EventBase::parseEndTime(QString value)
+{
+    EndTime = QTime::fromString(value, "h - mm:ss");
+    return false;
 }
 
 
