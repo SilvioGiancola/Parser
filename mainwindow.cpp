@@ -177,7 +177,7 @@ void MainWindow::on_myChampionship_gameEdited(Game * newGame)
     QTableWidgetItem *setdes = new QTableWidgetItem();
     setdes->setText(newGame->printScore());
     if (newGame->hasVideo())    setdes->setBackgroundColor(QColor(Qt::green));
-    else                        setdes->setBackgroundColor(QColor(Qt::red));
+    else                        setdes->setBackgroundColor(QColor(255,100,100));
     ui->tableWidget_Season->setItem(row,col,setdes);
 
 
